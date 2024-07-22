@@ -1,0 +1,14 @@
+
+*~
+*.o
+*.so
+build/*
+release/*
+
+
+# JetBrains IDE
+.idea/
+
+# KDevelop project files
+*.kdev4
+.kdev4/
