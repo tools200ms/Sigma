@@ -16,6 +16,16 @@ Currently, project supports following features:
 
 ## Logic
 
+The purpose of the device is to perform given action upon occurrence of a certain conditions.
+The conditions are: 
+### Upper limit: 
+- **if** value exceeds `max` **then:** send signal `on`
+- *if* value drops below `min` **then:** send signal `off`
+### Down limit
+- **if** value drops below `min` **then:** send signal `on`
+- *if* value exceeds `man` **then:** send signal `off`
+
+At this point only temperature sensors has been implemented and tested. Thus the value can only be temperature. 'Logic' `Upper limit` is used to drive cooling (by swithing on fan), while logic `Down limit` is for heating applications.
 
 
 ## Requirements
