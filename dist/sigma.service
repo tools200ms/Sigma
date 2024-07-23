@@ -1,0 +1,12 @@
+[Unit]
+Description=Sigma Service
+
+[Service]
+Type=simple
+ExecStart=/usr/local/bin/sigma --silent
+Restart=on-failure
+User=root
+Group=root
+
+[Install]
+WantedBy=multi-user.target

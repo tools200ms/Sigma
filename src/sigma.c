@@ -66,7 +66,6 @@ UWORD *init_display() {
 
 void redraw(UWORD *img_buff, float *temp, short relay_ch1_state, short relay_ch2_state) {
     Paint_Clear(WHITE);
-    //GUI_ReadBmp("/srv/bg-01.bmp");
 
     Paint_DrawFloatNum(16, 16, *temp, 1, &Font50, WHITE, BROWN);
 
@@ -97,7 +96,6 @@ int main( int argc, char *argv[] ) {
     W1BusDev *temp_sensor_ext = w1_bus_add_device( "0722b147c084" );
 
     ext_temp = new_ext_temp = w1_bus_temp_sensor_rawread(temp_sensor_ext);
-    // Input PINS:
 
 
     uint16_t *image;
@@ -113,15 +111,7 @@ int main( int argc, char *argv[] ) {
 		printf("Open");
 	}
 
-	//relay_test(relay1_dev);
 
-
-    /*extern pthread_mutex_t event_mutex;
-    extern pthread_cond_t event_cond;
-    extern int __loop_event;
-
-    scheduler_init(1000);*/
-    //
     int temp1_upper_limit = 300, temp1_down_limit = 280,
         temp2_upper_limit = 340, temp2_down_limit = 310;
 
