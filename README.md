@@ -3,6 +3,7 @@
 Sigma is a control and monitoring program from IoT realm designed for running on Raspberry PI boards. Program reads-out paramters such as temperature, basing on this does apply a certain actions e.g. cooling fan switch on/off.
 It supports LCD diplay, thus user has an easy insight into actual state.
 
+![Setup](./doc/PiAndSigma.jpeg =300x300 "Setup: PI with display, temp. sensor and relay")
 
 > **CAUTION:**
 > 
