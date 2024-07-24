@@ -10,10 +10,9 @@
 #include "../lib/messages.h"
 #include "../lib/translations.h"
 
-Config *parse_arguments( int argc, char *argv[] ) {
+char *parse_arguments( int argc, char *argv[] ) {
     int opt;
     int option_index = 0;
-    Config *conf;
     char *config_path = SIGMA_DEFAULT_CONFIG_FILE_PATH;
 
     static struct option sigma_options[] = {
@@ -61,10 +60,10 @@ Config *parse_arguments( int argc, char *argv[] ) {
         }
     }
 
-    conf = malloc( sizeof(Config) );
-    // zero
-    // memset (&spi, 0, sizeof (spi)) ;
-    conf->config_file = strdup( config_path );
+    return strdup( config_path );
+}
 
-    return conf;
+void parser_claen( char *conf_file ) {
+
+    free( conf_file );
 }

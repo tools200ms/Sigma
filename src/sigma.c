@@ -27,7 +27,7 @@ DisplayModel display_1in54_ST7789 = {240, 240};
 #include "lib/canvas.h"
 
 #include "shell/arg_parser.h"
-//#include "core/scheduler.h"
+#include "core/logic_simple.h"
 //#include "drivers/buzzer.h"
 #include "drivers/1w_bus.h"
 #include "drivers/relay.h"
@@ -40,8 +40,6 @@ UWORD *init_display() {
     signal( SIGINT, Handler_clean );
 
     /* LCD Init */
-    //Display *displ;
-    //displ =
 	display_spi_init( &display_1in54_ST7789, DISPLAY_PHY_HORIZONTAL );
 
     //display_spi_clear( RED );
@@ -152,24 +150,14 @@ int main( int argc, char *argv[] ) {
     t = (float)ext_temp / 10;
     redraw(image, &t, relay_status( relay1_dev, 1), relay_status( relay1_dev, 2));
 
-    //buzzer_play();
     // Main loop
     while(1) {
-        //pthread_mutex_lock(&event_mutex);
-
-        // Wait for the condition to be met
-        //pthread_cond_wait(&event_cond, &event_mutex);
-
-        // ,,,,
-
-        // Unlock the mutex
-        //pthread_mutex_unlock(&event_mutex);
-
         new_ext_temp = w1_bus_temp_sensor_rawread(temp_sensor_ext);
 
         if( ext_temp != new_ext_temp ) {
             ext_temp = new_ext_temp;
 
+			// Upper range
             if( ext_temp > temp1_upper_limit && (relay_status(relay1_dev, 1) == RELAY_CH_NOWCLOSED) ) {
 				relay_opencontact( relay1_dev, 1 );
             } else if( ext_temp < temp1_down_limit && (relay_status(relay1_dev, 1) == RELAY_CH_NOWOPEN) ) {

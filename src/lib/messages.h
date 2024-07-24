@@ -40,17 +40,17 @@ bool msgIsDebuggingModeSet();
 
 #ifdef DEBUG
 
-#define MSG_DEBUG( desc ) \
-	if( msgIsDebuggingModeSet() ) fprintf( stdout, __FILE__ ": %d, %s\n", __LINE__, desc );
+#define MSG_DEBUG( descr ) \
+	if( msgIsDebuggingModeSet() ) fprintf( stdout, __FILE__ ": %d, %s\n", __LINE__, descr );
 
-#define MSG_DEBUG_( desc, format, val ) \
-	if( msgIsDebuggingModeSet() ) fprintf( stdout, __FILE__ ": %d, " desc " is '" format "'\n", __LINE__, val );
+#define MSG_DEBUG_( descr, args... ) \
+	if( msgIsDebuggingModeSet() ) fprintf( stdout, __FILE__ ": %d, " descr "'\n", __LINE__, args );
 
-#define MSG_DEBUG_DEC( desc, val ) \
-	if( msgIsDebuggingModeSet() ) fprintf( stdout, __FILE__ ": %d, " desc " is '%d'\n", __LINE__, val );
+#define MSG_DEBUG_DEC( var_name, val ) \
+	if( msgIsDebuggingModeSet() ) fprintf( stdout, __FILE__ ": %d, " descr " is '%d'\n", __LINE__, val );
 
-#define MSG_DEBUG_STR( desc, val ) \
-	if( msgIsDebuggingModeSet() ) fprintf( stdout, __FILE__ ": %d, " desc " is '%s'\n", __LINE__, val );
+#define MSG_DEBUG_STR( var_name, val ) \
+	if( msgIsDebuggingModeSet() ) fprintf( stdout, __FILE__ ": %d, " descr " is '%s'\n", __LINE__, val );
 
 #define MSG_DEBUG_BR \
 	if( msgIsDebuggingModeSet() ) fprintf( stdout, "==============================================\n" );
@@ -61,10 +61,10 @@ bool msgIsDebuggingModeSet();
 */
 #define DEBUG(__info,...)
 
-#define MSG_DEBUG( desc )
-#define MSG_DEBUG_( desc, format, val )
-#define MSG_DEBUG_DEC( desc, val )
-#define MSG_DEBUG_STR( desc, val )
+#define MSG_DEBUG( descr )
+#define MSG_DEBUG_( descr, args... )
+#define MSG_DEBUG_DEC( var_name, val )
+#define MSG_DEBUG_STR( var_name, val )
 #define MSG_DEBUG_BR
 
 #endif // DEBUG
@@ -75,15 +75,15 @@ bool msgIsDebuggingModeSet();
 #define MSG_INFO( msg ) \
 	if( msgIsSilentModeSet() == false ) fprintf( stdout, msg "\n" );
 
-#define MSG_INFO_( format, msgs... ) \
-	if( msgIsSilentModeSet() == false ) fprintf( stdout, format "\n", msgs );
+#define MSG_INFO_( msg, args... ) \
+	if( msgIsSilentModeSet() == false ) fprintf( stdout, msg "\n", args );
 
 
 #define MSGBEGIN_INFO( msg ) \
 	if( msgIsSilentModeSet() == false ) fprintf( stdout, msg );
 
-#define MSGBEGIN_INFO_( format, msgs... ) \
-	if( msgIsSilentModeSet() == false ) fprintf( stdout, format, msgs );
+#define MSGBEGIN_INFO_( msg, args... ) \
+	if( msgIsSilentModeSet() == false ) fprintf( stdout, msg, args );
 
 #define MSGEND_INFO( msg ) \
 	if( msgIsSilentModeSet() == false ) fprintf( stdout, msg "\n" );
@@ -109,8 +109,8 @@ if( msgIsSilentModeSet() == false ) fprintf( stdout, format "\n", msgs );
 #define MSG_VERBOSE( msg ) \
 	if( msgIsVerboseModeSet() ) fprintf( stdout, msg "\n" );
 
-#define MSG_VERBOSE_( format, msgs... ) \
-	if( msgIsVerboseModeSet() ) fprintf( stdout, format "\n", msgs );
+#define MSG_VERBOSE_( msg, args... ) \
+	if( msgIsVerboseModeSet() ) fprintf( stdout, msg "\n", args );
 
 #define MSG_VERBOSE_FUN( print_fun ) \
 	if( msgIsVerboseModeSet() ) print_fun( stdout );
@@ -122,8 +122,11 @@ if( msgIsSilentModeSet() == false ) fprintf( stdout, format "\n", msgs );
 #define MSG_ERROR( msg ) \
 	{ fprintf( stderr, "ERROR: %s\n", msg ); }
 
-#define MSG_ERROR_( format, msgs... ) \
-	{ fprintf( stderr, "ERROR: " format, msgs ); }
+#define MSG_ERROR_( msg, args... ) \
+	{ fprintf( stderr, "ERROR: " msg, args ); }
+
+#define MSG_ERROR_MALLOC() \
+	{ fprintf( stderr, "ERROR: malloc() has failedat %s:%d\n", __FILE__, __LINE__ ); exit(43); }
 
 #define MSG_ERROR_AND_EXIT( msg ) \
 	{ fprintf( stderr, "ERROR: %s\n", msg ); exit(1); }

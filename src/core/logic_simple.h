@@ -1,13 +1,11 @@
-#ifndef _SIGMA_200MS_NET__._CORE_LOGIC_SIMPLE_H_
-#define _SIGMA_200MS_NET__._CORE_LOGIC_SIMPLE_H_
+#ifndef _SIGMA_200MS_NET__CORE_LOGIC_SIMPLE_H_
+#define _SIGMA_200MS_NET__CORE_LOGIC_SIMPLE_H_
+
+#include <stdbool.h>
 
 
-#define LOGIC_UPPER_LIMIT 1
-#define LOGIC_DOWN_LIMIT  2
-
-typeof struct logic_range {
+typedef struct logic_range {
     int val_min, val_max;
-    int limit;
     void *in, *out_on, *out_off;
 } LogicRange;
 
@@ -15,4 +13,7 @@ void logicsimple_init( LogicRange *ranges );
 
 void logicsimple_loop();
 
-#endif // _SIGMA_200MS_NET__._CORE_LOGIC_SIMPLE_H_
+bool logicsimple_limit_upper( LogicRange *range, int scalar );
+bool logicsimple_limit_low( LogicRange *range, int scalar );
+
+#endif // _SIGMA_200MS_NET__CORE_LOGIC_SIMPLE_H_
