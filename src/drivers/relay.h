@@ -2,6 +2,9 @@
 #ifndef _SIGMA_200MS_NET__DRIVERS_RELAY_H_
 #define _SIGMA_200MS_NET__DRIVERS_RELAY_H_
 
+
+#define RELAY_MAX_CHANEL_CNT 	32
+
 // Mode:
 #define RELAY_MODE_NULL           0x80
 #define RELAY_MODE_NORMALLY_OPEN  0x01 | RELAY_MODE_NULL // normally default settings for relay

@@ -27,6 +27,8 @@ DisplayModel display_1in54_ST7789 = {240, 240};
 #include "lib/canvas.h"
 
 #include "shell/arg_parser.h"
+#include "shell/conf_read.h"
+
 #include "core/logic_simple.h"
 //#include "drivers/buzzer.h"
 #include "drivers/1w_bus.h"
@@ -85,13 +87,17 @@ void redraw(UWORD *img_buff, float *temp, short relay_ch1_state, short relay_ch2
 
 int main( int argc, char *argv[] ) {
     int ext_temp, new_ext_temp;
+    char *conf_file;
+    Config *config;
 
-    parse_arguments( argc, argv );
+    conf_file = parse_arguments( argc, argv );
+    config = read_conf( conf_file );
+
 
     MSG_INFO_( "%s - version: %s", SIGMA_NAME, SIGMA_VERSION );
     wiringPiSetupGpio();
 
-    W1BusDev *temp_sensor_ext = w1_bus_add_device( "0722b147c084" );
+    W1BusDev *temp_sensor_ext = w1_bus_add_device( config->dev.temp );
 
     ext_temp = new_ext_temp = w1_bus_temp_sensor_rawread(temp_sensor_ext);
 

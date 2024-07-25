@@ -59,8 +59,6 @@ bool msgIsDebuggingModeSet();
 /**
 	just put nothing when DEBUG is not defined
 */
-#define DEBUG(__info,...)
-
 #define MSG_DEBUG( descr )
 #define MSG_DEBUG_( descr, args... )
 #define MSG_DEBUG_DEC( var_name, val )
@@ -123,7 +121,7 @@ if( msgIsSilentModeSet() == false ) fprintf( stdout, format "\n", msgs );
 	{ fprintf( stderr, "ERROR: %s\n", msg ); }
 
 #define MSG_ERROR_( msg, args... ) \
-	{ fprintf( stderr, "ERROR: " msg, args ); }
+	{ fprintf( stderr, "ERROR: " msg "\n", args ); }
 
 #define MSG_ERROR_MALLOC() \
 	{ fprintf( stderr, "ERROR: malloc() has failedat %s:%d\n", __FILE__, __LINE__ ); exit(43); }

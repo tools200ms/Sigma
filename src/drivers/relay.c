@@ -14,7 +14,6 @@
 
 #include "relay.h"
 
-#define RELAY_MAX_CHANEL_CNT 32
 
 #define RELAY_ONE_CHANEL 1
 #define RELAY_TWO_CHANEL 2
@@ -43,7 +42,7 @@ RelayDev *relay4ch_init( int ch1_pin, int ch2_pin, int ch3_pin, int ch4_pin ) {
 }
 
 
-RelayDev *relay_init(const short mode, const int chanel_cnt, ...) {
+RelayDev *relay_init( const short mode, const int chanel_cnt, ... ) {
 	va_list pin_list;
 	RelayDev *relay_dev;
 	int *relay_chanel_pins;

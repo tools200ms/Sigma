@@ -26,7 +26,7 @@ else
 	MSG = -g -O0 -Wall
 endif
 
-LIB = -lwiringPi -lm
+LIBS = -lwiringPi -linih
 
 CC = gcc
 # Important ! Important ! Important !
@@ -39,13 +39,18 @@ BIN_PATH = ../build
 ${TARGET}: ${OBJ_O}
 	mkdir -p $(BIN_PATH)
 	$(CC) $(CFLAGS) ${TARGET}.c $(OBJ_O) \
-			$(LIB) \
+			$(LIBS) \
 			-I $(DIR_FONTS) \
 			-I $(DIR_Lib) \
 			-I $(DIR_Shell) \
 			-I $(DIR_Drivers) \
 			-o $(BIN_PATH)/$@
-
+ifdef DEBUG
+	@echo ""
+	@echo "Debugging symbols and definitions included."
+	@echo "To see program's DEBUG messages add '-d' flag to program call"
+	@echo "    e.g.: ./sigma -d ..."
+endif
 
 ${DIR_FONTS}/%.o:$(DIR_FONTS)/%.c
 	$(CC) $(CFLAGS) -c  $< -o $@
@@ -60,7 +65,7 @@ ${DIR_Core}/%.o:$(DIR_Core)/%.c
 	$(CC) $(CFLAGS) -c  $< -o $@
 
 ${DIR_Drivers}/%.o:$(DIR_Drivers)/%.c
-	$(CC) $(CFLAGS) -c  $< -o $@ $(LIB)
+	$(CC) $(CFLAGS) -c  $< -o $@ $(LIBS)
 
 
 clean :
