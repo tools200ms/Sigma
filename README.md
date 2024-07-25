@@ -21,17 +21,17 @@ The purpose of the device is to perform given action upon occurrence of a certai
 The conditions are defined as: 
 ### Upper limit: 
 - **if** value exceeds `max` **then:** send signal `on`
-- *if* value drops below `min` **then:** send signal `off`
+- **if** value drops below `min` **then:** send signal `off`
 ### Low limit
 - **if** value drops below `min` **then:** send signal `on`
-- *if* value exceeds `max` **then:** send signal `off`
+- **if** value exceeds `max` **then:** send signal `off`
 
 At this point only temperature sensors has been implemented and tested. Thus the value can only be temperature. 'Logic' `Upper limit` is used to drive cooling (by swithing on fan), while logic `Low limit` is for heating applications.
 
 
 ## Requirements
 
-1. Raspberry PI Computer, models: Zero / 3 / 4 / 5
+1. Raspberry PI Computer, any of models: Zero / 3 / 4 / 5
 2. MicroSD card with Raspberry Pi OS, or other Linux distribution supporting GPIO
 3. Peripherals (if more, more fun): 
    * SPI LCD/OLED display such as Waveshare 0.96inch - 2.4inch, **NOTE:** tested only with [Waveshare 1.54" LCD](https://www.waveshare.com/wiki/1.54inch_LCD_Module)
