@@ -69,13 +69,13 @@ void redraw(UWORD *img_buff, float *temp, short relay_ch1_state, short relay_ch2
 
     Paint_DrawFloatNum(16, 16, *temp, 1, &Font50, WHITE, BROWN);
 
-    if(relay_ch1_state == RELAY_CH_NOWOPEN) {
+    if(relay_ch1_state == DEV_RELAY_CH_NOWOPEN) {
         Paint_DrawRectangle(16, 120, 16 + 20, 120 + 20, RED, 1, 1);
     } else {
         Paint_DrawRectangle(16, 120, 16 + 20, 120 + 20, GRAY, 1, 1);
     }
 
-    if( relay_ch2_state == RELAY_CH_NOWOPEN ) {
+    if( relay_ch2_state == DEV_RELAY_CH_NOWOPEN ) {
         Paint_DrawRectangle(40, 120, 40 + 20, 120 + 20, RED, 1, 1);
     } else {
         Paint_DrawRectangle(40, 120, 40 + 20, 120 + 20, GRAY, 1, 1);
@@ -86,7 +86,8 @@ void redraw(UWORD *img_buff, float *temp, short relay_ch1_state, short relay_ch2
 
 
 int main( int argc, char *argv[] ) {
-    int ext_temp, new_ext_temp;
+
+    uint16_t *image;
     char *conf_file;
     Config *config;
 
@@ -96,75 +97,28 @@ int main( int argc, char *argv[] ) {
 
     MSG_INFO_( "%s - version: %s", SIGMA_NAME, SIGMA_VERSION );
     wiringPiSetupGpio();
-
-    W1BusDev *temp_sensor_ext = w1_bus_add_device( config->dev.temp );
-
-    ext_temp = new_ext_temp = w1_bus_temp_sensor_rawread(temp_sensor_ext);
-
-
-    uint16_t *image;
-	RelayDev *relay1_dev;
-    float t = -300;
+    // Display should be initialized as soon as possible
     image = init_display();
 
-	relay1_dev = relay2ch_init(26, 19);
 
-	if( relay_status( relay1_dev, 1) == RELAY_CH_NOWCLOSED ) {
-		printf("Closed");
-	} else {
-		printf("Open");
-	}
+    W1BusDev *temp_sensor_ext = w1_bus_add_device( config->dev.temp );
+    RelayDev *relay1_dev;
 
 
-    int temp1_upper_limit = 300, temp1_down_limit = 280,
-        temp2_upper_limit = 340, temp2_down_limit = 310;
+	relay1_dev = relayXch_init( config->dev.relay_mode, -1, config->dev.relay_pins );
 
-    short temp_range_validated = 0;
 
-    if( IS_VALID_TEMP_VALUE(temp1_upper_limit) &&
-        IS_VALID_TEMP_VALUE(temp1_down_limit) ) {
-      temp_range_validated = 1;
-    } else {
-      perror("temperature out-of range");
-      return 1;
-    }
-
-    if( IS_VALID_TEMP_VALUE(temp2_upper_limit) &&
-        IS_VALID_TEMP_VALUE(temp2_down_limit) ) {
-      temp_range_validated = 1;
-    } else {
-      perror("temperature out-of range");
-      return 1;
-    }
-
-    if( IS_VALID_TEMP_RANGE_VALUE(temp1_upper_limit, temp1_down_limit) &&
-        IS_VALID_TEMP_RANGE_VALUE(temp2_upper_limit, temp2_down_limit) ) {
-      temp_range_validated = 2;
-    } else {
-      perror("Upper - down illegal range");
-      printf("    temperature 1 fan operating range to: %f (fan on) - %f (fan off)", (float)temp1_upper_limit / 10, (float)temp1_down_limit / 10);
-      printf("    temperature 2 fan operating range to: %f (fan on) - %f (fan off)", (float)temp2_upper_limit / 10, (float)temp2_down_limit / 10);
-
-      return 1;
-    }
-
-    if(temp_range_validated == 1) {
-      printf("Setting up temperature 1 fan operating range to: %f (fan on) - %f (fan off)", (float)temp1_upper_limit / 10, (float)temp1_down_limit / 10);
-      printf("Setting up temperature 2 fan operating range to: %f (fan on) - %f (fan off)", (float)temp2_upper_limit / 10, (float)temp2_down_limit / 10);
-    } // else error in code
-
-    t = (float)ext_temp / 10;
-    redraw(image, &t, relay_status( relay1_dev, 1), relay_status( relay1_dev, 2));
+    w1_bus_temp_sensor_load( temp_sensor_ext );
+    redraw(image, &(temp_sensor_ext->dev.ds18b20.temp), relay_status( relay1_dev, 1), relay_status( relay1_dev, 2));
 
     // Main loop
-    while(1) {
-        new_ext_temp = w1_bus_temp_sensor_rawread(temp_sensor_ext);
+    while( 1 ) {
+        w1_bus_temp_sensor_load( temp_sensor_ext );
 
-        if( ext_temp != new_ext_temp ) {
-            ext_temp = new_ext_temp;
+        if( temp_sensor_ext->dev.ds18b20.has_changed ) {
 
 			// Upper range
-            if( ext_temp > temp1_upper_limit && (relay_status(relay1_dev, 1) == RELAY_CH_NOWCLOSED) ) {
+            /*if( ext_temp > temp1_upper_limit && (relay_status(relay1_dev, 1) == RELAY_CH_NOWCLOSED) ) {
 				relay_opencontact( relay1_dev, 1 );
             } else if( ext_temp < temp1_down_limit && (relay_status(relay1_dev, 1) == RELAY_CH_NOWOPEN) ) {
 				relay_closecontact(relay1_dev, 1);
@@ -174,10 +128,9 @@ int main( int argc, char *argv[] ) {
 				relay_opencontact(relay1_dev, 2);
             } else if( ext_temp < temp2_down_limit && (relay_status(relay1_dev, 2) == RELAY_CH_NOWOPEN) ) {
 				relay_closecontact(relay1_dev, 2);
-            }
+            }*/
 
-            t = (float)ext_temp / 10;
-            redraw(image, &t, relay_status( relay1_dev, 1), relay_status( relay1_dev, 2));
+            redraw(image, &(temp_sensor_ext->dev.ds18b20.temp), relay_status( relay1_dev, 1), relay_status( relay1_dev, 2));
         }
 
         sleep(2);
@@ -193,7 +146,7 @@ void Handler_clean( int signo ) {
 
     // scheduler_softexit();
 
-    //Paint_Clear(RED);
+    // Paint_Clear(RED);
     img_buff = Paint_GetImage();
 
     spi_set_backlight(127);

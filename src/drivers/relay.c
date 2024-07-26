@@ -26,21 +26,62 @@ static void _mark_channel_status_closed( unsigned long long *status, const int c
 
 
 RelayDev *relay1ch_init( int ch_pin ) {
-	return relay_init( RELAY_MODE_NORMALLY_OPEN, RELAY_ONE_CHANEL, ch_pin );
+	return relay_init( DEV_RELAY_MODE_NORMALLY_OPEN, RELAY_ONE_CHANEL, ch_pin );
 }
 
 RelayDev *relay2ch_init( int ch1_pin, int ch2_pin ) {
-	return relay_init( RELAY_MODE_NORMALLY_OPEN, RELAY_TWO_CHANEL, ch1_pin, ch2_pin );
+	return relay_init( DEV_RELAY_MODE_NORMALLY_OPEN, RELAY_TWO_CHANEL, ch1_pin, ch2_pin );
 }
 
 RelayDev *relay3ch_init( int ch1_pin, int ch2_pin, int ch3_pin ) {
-	return relay_init( RELAY_MODE_NORMALLY_OPEN, RELAY_THREE_CHANEL, ch1_pin, ch2_pin, ch3_pin );
+	return relay_init( DEV_RELAY_MODE_NORMALLY_OPEN, RELAY_THREE_CHANEL, ch1_pin, ch2_pin, ch3_pin );
 }
 
 RelayDev *relay4ch_init( int ch1_pin, int ch2_pin, int ch3_pin, int ch4_pin ) {
-	return relay_init(RELAY_MODE_NORMALLY_OPEN, RELAY_FOUR_CHANEL, ch1_pin, ch2_pin, ch3_pin, ch4_pin );
+	return relay_init( DEV_RELAY_MODE_NORMALLY_OPEN, RELAY_FOUR_CHANEL, ch1_pin, ch2_pin, ch3_pin, ch4_pin );
 }
 
+RelayDev *relayXch_init( const short mode, int chanel_cnt, int pins[] ) {
+
+	RelayDev *relay_dev = NULL;
+
+	if( chanel_cnt == 0 || chanel_cnt > DEV_RELAY_MAX_CHANEL_CNT ) {
+		MSG_ERROR_( "Illegal chanel count provided: %d\n", chanel_cnt );
+		return NULL;
+	} else if( chanel_cnt < 0 ) {
+		for( int idx = 0; idx < DEV_RELAY_MAX_CHANEL_CNT; ) {
+
+			if( pins[idx++] < 0 ) {
+				chanel_cnt = idx;
+				break;
+			}
+		}
+
+		if( chanel_cnt < 0 ) {
+			MSG_ERROR( "Can not find chanel cnt." );
+			return NULL;
+		}
+	}
+
+	switch( chanel_cnt ) {
+		case 1:
+			relay_dev = relay_init( mode, chanel_cnt, pins[0] );
+		;;
+
+		case 2:
+			relay_dev = relay_init( mode, chanel_cnt, pins[0], pins[1] );
+		;;
+
+		case 3:
+			relay_dev = relay_init( mode, chanel_cnt, pins[0], pins[1], pins[2] );
+		;;
+
+		default:
+			MSG_ERROR("Function 'relayXch_init()' NOT FULLY IMPLEMENTED !!!");
+	}
+
+	return relay_dev;
+}
 
 RelayDev *relay_init( const short mode, const int chanel_cnt, ... ) {
 	va_list pin_list;
@@ -49,7 +90,7 @@ RelayDev *relay_init( const short mode, const int chanel_cnt, ... ) {
 
 	// TODO: validate mode
 
-	if( chanel_cnt < 1 || chanel_cnt > RELAY_MAX_CHANEL_CNT ) {
+	if( chanel_cnt < 1 || chanel_cnt > DEV_RELAY_MAX_CHANEL_CNT ) {
 		MSG_ERROR_( "Illegal chanel count provided: %d\n", chanel_cnt );
 		return NULL;
 	}
@@ -61,18 +102,18 @@ RelayDev *relay_init( const short mode, const int chanel_cnt, ... ) {
 		return NULL;
 	}
 
-	if( (mode & (RELAY_MODE_NULL)) != (RELAY_MODE_NULL) ) {
+	if( (mode & (DEV_RELAY_MODE_NULL)) != (DEV_RELAY_MODE_NULL) ) {
 		MSG_ERROR( "Incorrect relay mode flag provided" );
 		return NULL;
 	}
 
 	char *mode_str;
 
-	if( (mode & (RELAY_MODE_NORMALLY_OPEN)) == (RELAY_MODE_NORMALLY_OPEN) ) {
+	if( (mode & (DEV_RELAY_MODE_NORMALLY_OPEN)) == (DEV_RELAY_MODE_NORMALLY_OPEN) ) {
 		relay_dev->OPEN_FLAG  = LOW;
 		relay_dev->CLOSE_FLAG = HIGH;
 		mode_str = "open";
-	} else if( (mode & (RELAY_MODE_NORMALLY_CLOSE)) == (RELAY_MODE_NORMALLY_CLOSE) ) {
+	} else if( (mode & (DEV_RELAY_MODE_NORMALLY_CLOSE)) == (DEV_RELAY_MODE_NORMALLY_CLOSE) ) {
 		relay_dev->OPEN_FLAG  = HIGH;
 		relay_dev->CLOSE_FLAG = LOW;
 		mode_str = "close";
@@ -161,7 +202,7 @@ short relay_status( const RelayDev *r_dev, const int ch_no ) {
 	unsigned long long status_mask
 							= 1ULL << (ch_no - 1);
 
-	return ((r_dev->status) & status_mask) != 0 ? RELAY_CH_NOWOPEN : RELAY_CH_NOWCLOSED;
+	return ((r_dev->status) & status_mask) != 0 ? DEV_RELAY_CH_NOWOPEN : DEV_RELAY_CH_NOWCLOSED;
 }
 
 // End of Relay status updates/reads
@@ -175,7 +216,7 @@ void relay_opencontact( RelayDev *r_dev, const int ch_no ) {
 
 	//status_mask = 1ULL << (ch_no - 1);
 
-	if( relay_status( r_dev, ch_no ) == RELAY_CH_NOWOPEN ) {
+	if( relay_status( r_dev, ch_no ) == DEV_RELAY_CH_NOWOPEN ) {
 		// relay already open!
 		MSG_WARN( "Ralay contact already open!" );
 		return;
@@ -196,7 +237,7 @@ void relay_closecontact( RelayDev *r_dev, const int ch_no ) {
 
 	//status_mask = 1ULL << (ch_no - 1);
 
-	if( relay_status( r_dev, ch_no ) == RELAY_CH_NOWCLOSED ) {
+	if( relay_status( r_dev, ch_no ) == DEV_RELAY_CH_NOWCLOSED ) {
 		// relay already closed!
 		MSG_WARN("Ralay contact already closed!");
 

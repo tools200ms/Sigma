@@ -44,7 +44,7 @@ bool msgIsDebuggingModeSet();
 	if( msgIsDebuggingModeSet() ) fprintf( stdout, __FILE__ ": %d, %s\n", __LINE__, descr );
 
 #define MSG_DEBUG_( descr, args... ) \
-	if( msgIsDebuggingModeSet() ) fprintf( stdout, __FILE__ ": %d, " descr "'\n", __LINE__, args );
+	if( msgIsDebuggingModeSet() ) fprintf( stdout, __FILE__ ": %d, " descr "\n", __LINE__, args );
 
 #define MSG_DEBUG_DEC( var_name, val ) \
 	if( msgIsDebuggingModeSet() ) fprintf( stdout, __FILE__ ": %d, " descr " is '%d'\n", __LINE__, val );
