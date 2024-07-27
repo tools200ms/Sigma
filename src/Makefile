@@ -9,7 +9,7 @@ OBJ_C = $(wildcard ${DIR_Lib}/*.c ${DIR_Shell}/*.c ${DIR_Drivers}/*.c ${DIR_GUI}
 OBJ_O := ${patsubst %.c, %.o, ${OBJ_C}}
 
 TARGET = sigma
-
+BUILD_DIR = ../build
 
 ifdef DEBUG
 	ifeq ("${DEBUG}","y")
@@ -33,18 +33,16 @@ CC = gcc
 
 CFLAGS += $(MSG) $(MAC)
 
-BIN_PATH = ../build
-
 
 ${TARGET}: ${OBJ_O}
-	mkdir -p $(BIN_PATH)
+	mkdir -p $(BUILD_DIR)
 	$(CC) $(CFLAGS) ${TARGET}.c $(OBJ_O) \
 			$(LIBS) \
 			-I $(DIR_FONTS) \
 			-I $(DIR_Lib) \
 			-I $(DIR_Shell) \
 			-I $(DIR_Drivers) \
-			-o $(BIN_PATH)/$@
+			-o $(BUILD_DIR)/$@
 ifdef DEBUG
 	@echo ""
 	@echo "Debugging symbols and definitions included."
@@ -68,9 +66,9 @@ ${DIR_Drivers}/%.o:$(DIR_Drivers)/%.c
 	$(CC) $(CFLAGS) -c  $< -o $@ $(LIBS)
 
 
-clean :
+clean:
 	rm -f ${OBJ_O}
-	rm -f $(TARGET)
+	rm -f $(BUILD_DIR)/$(TARGET)
 
 deepclean: clean
 	find . -type f -name "*~" -exec rm '{}' \;

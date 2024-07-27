@@ -109,8 +109,6 @@ int main( int argc, char *argv[] ) {
     w1_bus_init_device( main_ext_temp_sensor );
     relay_init( main_relay_dev );
 
-    relay_test( main_relay_dev );
-
     w1_bus_temp_sensor_load( main_ext_temp_sensor );
     redraw(image, &(main_ext_temp_sensor->dev.ds18b20.temp), relay_status( main_relay_dev, 1), relay_status( main_relay_dev, 2));
 
