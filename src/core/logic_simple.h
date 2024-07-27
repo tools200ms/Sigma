@@ -3,11 +3,8 @@
 
 #include <stdbool.h>
 
+#include "../lib/logic_range.h"
 
-typedef struct logic_range {
-    int val_min, val_max;
-    void *in, *out_on, *out_off;
-} LogicRange;
 
 void logicsimple_init( LogicRange *ranges );
 

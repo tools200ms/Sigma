@@ -1,6 +1,9 @@
 #ifndef _SIGMA_200MS_NET__SHELL_CONF_READ_H_
 #define _SIGMA_200MS_NET__SHELL_CONF_READ_H_
 
+#include "../lib/logic_range.h"
+
+#include "../drivers/1w_bus.h"
 #include "../drivers/relay.h"
 
 // Maximum parameter count:
@@ -12,25 +15,16 @@
 
 
 struct config_devices {
-    char temp[13];
-    int relay_mode, relay_pins[DEV_RELAY_MAX_CHANEL_CNT];
+
+    W1BusDev *w1bus[8];
+    RelayDev *relay[8];
 };
 
-struct config_logic {
-    float max, min;
-    enum {
-        UPPER_LIMIT,
-        LOW_LIMIT
-    } limit_type;
-
-    // relay ch1 open
-    int relay_ch;
-};
 
 typedef struct sigma_config {
 
     struct config_devices dev;
-    struct config_logic logic[2];
+    LogicRange *logic[4];
 }
 Config;
 

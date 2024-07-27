@@ -24,6 +24,7 @@
 DisplayModel display_1in54_ST7789 = {240, 240};
 
 #include "lib/messages.h"
+#include "lib/logic_range.h"
 #include "lib/canvas.h"
 
 #include "shell/arg_parser.h"
@@ -101,36 +102,43 @@ int main( int argc, char *argv[] ) {
     image = init_display();
 
 
-    W1BusDev *temp_sensor_ext = w1_bus_add_device( config->dev.temp );
-    RelayDev *relay1_dev;
+    W1BusDev *main_ext_temp_sensor = config->dev.w1bus[0];
+    RelayDev *main_relay_dev = config->dev.relay[0];
 
 
-	relay1_dev = relayXch_init( config->dev.relay_mode, -1, config->dev.relay_pins );
+    w1_bus_init_device( main_ext_temp_sensor );
+    relay_init( main_relay_dev );
 
+    relay_test( main_relay_dev );
 
-    w1_bus_temp_sensor_load( temp_sensor_ext );
-    redraw(image, &(temp_sensor_ext->dev.ds18b20.temp), relay_status( relay1_dev, 1), relay_status( relay1_dev, 2));
+    w1_bus_temp_sensor_load( main_ext_temp_sensor );
+    redraw(image, &(main_ext_temp_sensor->dev.ds18b20.temp), relay_status( main_relay_dev, 1), relay_status( main_relay_dev, 2));
 
     // Main loop
     while( 1 ) {
-        w1_bus_temp_sensor_load( temp_sensor_ext );
+        w1_bus_temp_sensor_load( main_ext_temp_sensor );
 
-        if( temp_sensor_ext->dev.ds18b20.has_changed ) {
+        if( main_ext_temp_sensor->dev.ds18b20.has_changed ) {
 
-			// Upper range
-            /*if( ext_temp > temp1_upper_limit && (relay_status(relay1_dev, 1) == RELAY_CH_NOWCLOSED) ) {
-				relay_opencontact( relay1_dev, 1 );
-            } else if( ext_temp < temp1_down_limit && (relay_status(relay1_dev, 1) == RELAY_CH_NOWOPEN) ) {
-				relay_closecontact(relay1_dev, 1);
+            for( int ch = main_relay_dev->chanel_cnt; ch > 0; --ch ) {
+            switch( logic_range_inrange( config->logic[ch - 1], main_ext_temp_sensor->dev.ds18b20.temp )) {
+                case LOGIC_TURN_ON:
+                    relay_opencontact( main_relay_dev, ch );
+                break;
+                case LOGIC_TURN_OFF:
+                    relay_closecontact( main_relay_dev, ch );
+                break;
+
+                case LOGIC_KEEP_OFF:
+                case LOGIC_KEEP_ON:
+                case LOGIC_DEV_INIT:
+                case LOGIC_TURNED_OFF:
+                case LOGIC_TURNED_ON:
+                break;
+            }
             }
 
-            if( ext_temp > temp2_upper_limit && (relay_status(relay1_dev, 2) == RELAY_CH_NOWCLOSED) ) {
-				relay_opencontact(relay1_dev, 2);
-            } else if( ext_temp < temp2_down_limit && (relay_status(relay1_dev, 2) == RELAY_CH_NOWOPEN) ) {
-				relay_closecontact(relay1_dev, 2);
-            }*/
-
-            redraw(image, &(temp_sensor_ext->dev.ds18b20.temp), relay_status( relay1_dev, 1), relay_status( relay1_dev, 2));
+            redraw(image, &(main_ext_temp_sensor->dev.ds18b20.temp), relay_status( main_relay_dev, 1 ), relay_status( main_relay_dev, 2));
         }
 
         sleep(2);

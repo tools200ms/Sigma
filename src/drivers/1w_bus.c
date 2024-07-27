@@ -1,5 +1,6 @@
 #include <stdio.h>
 
+#include <string.h>
 #include <malloc.h>
 
 #include <wiringPi.h>
@@ -9,6 +10,7 @@
 
 #include "1w_bus.h"
 
+
 #define WIRINGPI_PINBASE_1W_START 128
 
 static W1BusDev *w1_dev_list_head = NULL;
@@ -16,16 +18,28 @@ static W1BusDev *w1_dev_list_tail = NULL;
 
 
 W1BusDev *w1_bus_add_device(const char *deviceId) {
-    static int pinbase_ref = WIRINGPI_PINBASE_1W_START;
     W1BusDev *new_dev;
 
-    MSGBEGIN_INFO_( "Adding 1Wire device: %s: : ", deviceId );
-
-    ds18b20Setup(pinbase_ref, deviceId);
-
     if((new_dev = malloc(sizeof(W1BusDev))) == NULL) {
-        perror("ERROR");
+        MSG_ERROR_MALLOC();
     }
+
+    strcpy(new_dev->deviceId, deviceId );
+
+    return new_dev;
+}
+
+int w1_bus_init_device( W1BusDev *new_dev ) {
+    static int pinbase_ref = WIRINGPI_PINBASE_1W_START;
+    //W1BusDev *new_dev;
+
+    MSGBEGIN_INFO_( "Registering 1Wire device: %s: : ", new_dev->deviceId );
+
+    ds18b20Setup( pinbase_ref, new_dev->deviceId );
+
+    //if((new_dev = malloc(sizeof(W1BusDev))) == NULL) {
+    //    perror("ERROR");
+    //}
 
     new_dev->pin_ref = pinbase_ref++;
 
@@ -39,12 +53,12 @@ W1BusDev *w1_bus_add_device(const char *deviceId) {
         new_dev->next = new_dev->prev = NULL;
     }
 
-    new_dev->dev.ds18b20.last_read = -528;
+    new_dev->dev.ds18b20.last_read = -4096;
     new_dev->dev.ds18b20.temp = NAN;
     new_dev->dev.ds18b20.has_changed = true;
 
     MSGEND_INFO( "\tOK" );
-    return new_dev;
+    return 0;
 }
 
 inline void w1_bus_temp_sensor_load( W1BusDev *w1_dev ) {
@@ -52,7 +66,7 @@ inline void w1_bus_temp_sensor_load( W1BusDev *w1_dev ) {
 
     if( w1_dev->dev.ds18b20.last_read != temp ) {
         w1_dev->dev.ds18b20.last_read = temp;
-        w1_dev->dev.ds18b20.last_read = (float)temp / 10;
+        w1_dev->dev.ds18b20.temp = (float)temp / 10;
         w1_dev->dev.ds18b20.has_changed = true;
     } else {
         w1_dev->dev.ds18b20.has_changed = false;

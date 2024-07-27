@@ -74,7 +74,13 @@ enum {  CONF_READ_READY, // Ready to read atomic data set
         CONF_READ_EXPECT_NEXT, // Remaining atomic data set in a next instruction/s
         CONF_READ_OK};  // Atomic data set has been read
 
-static int _parse_relay( const char *value, void *conf ) {
+static int cur_status = CONF_READ_READY;
+
+static Config *conf;
+static int dev_w1_no = 0, dev_relay_no = 0, logic_rule_no = 0;
+
+
+static void _parse_relay( const char *value ) {
 
     regex_t re;
     regmatch_t re_mat[CONFIG_MAX_PARAM_CNT], *m_idx = NULL;
@@ -82,7 +88,10 @@ static int _parse_relay( const char *value, void *conf ) {
     int re_res;
     char numb_buf[CONFIG_MAX_NUMBER_LEN];
 
-    struct config_devices* d_conf = (struct config_devices*) conf;
+    RelayMode relay_mode = DEV_RELAY_MODE_NULL;
+    int relay_pins[DEV_RELAY_MAX_CHANEL_CNT];
+
+    //struct config_devices* d_conf = (struct config_devices*) conf;
 
     re_res = regcomp(&re, "^(nopen|nclose)(([[:space:]]*[0-9]{1,3})+)$", REG_EXTENDED);
 
@@ -95,7 +104,8 @@ static int _parse_relay( const char *value, void *conf ) {
 
     if( re_res == REG_NOMATCH ) {
         MSG_WARN( "Invalid 'relay_pins' format, expected: (nopen|nclose) <chanel 1 pin no.> <chanel 2 pin no.> ..." );
-        return CONF_READ_WRONGSYNTAX;
+        cur_status = CONF_READ_WRONGSYNTAX;
+        return;
     } else if( re_res != 0 ) {
         MSG_ERROR( "Error while matching pattern" );
         exit( 1 );
@@ -109,9 +119,9 @@ static int _parse_relay( const char *value, void *conf ) {
     sprintf( numb_buf, "%.*s", (mi_end - mi_start), value + mi_start );
 
     if( strcmp(numb_buf, "nopen") == 0 ) {
-        d_conf->relay_mode = DEV_RELAY_MODE_NORMALLY_OPEN;
+        relay_mode = DEV_RELAY_MODE_NORMALLY_OPEN;
     } else {
-        d_conf->relay_mode = DEV_RELAY_MODE_NORMALLY_CLOSE;
+        relay_mode = DEV_RELAY_MODE_NORMALLY_CLOSE;
     }
 
     m_idx = &(re_mat[2]);
@@ -120,7 +130,7 @@ static int _parse_relay( const char *value, void *conf ) {
 
     int n_begin = -1;
 
-    int *pin = &(d_conf->relay_pins[0]);
+    int *pin = relay_pins;
 
     for( int idx = mi_start; idx <= mi_end; ++idx ) {
         if( idx == mi_end || value[idx] == ' ' || value[idx] == '\t' ) {
@@ -142,16 +152,20 @@ static int _parse_relay( const char *value, void *conf ) {
 
     *pin = -1;
 
+    // add relay
+    conf->dev.relay[ dev_relay_no++ ] = relayXch_create( relay_mode, -1, relay_pins );
+
     MSG_DEBUG( "Relay configuration added" );
 
-    return CONF_READ_OK;
+    cur_status = CONF_READ_OK;
+    return;
 }
 
-static int _parse_temp( const char *value, void *conf ) {
+static void _parse_temp( const char *value ) {
 
     regex_t re;
     int re_res;
-    struct config_devices* d_conf = (struct config_devices*) conf;
+    //struct config_devices* d_conf = (struct config_devices*) conf;
 
     re_res = regcomp(&re, "^[0-9A-Fa-f]{12}$", REG_EXTENDED);
     if( re_res ) {
@@ -163,37 +177,39 @@ static int _parse_temp( const char *value, void *conf ) {
 
     if( re_res == REG_NOMATCH ) {
         MSG_WARN_( "Invalid 1wire address: %s", value );
-        return CONF_READ_WRONGSYNTAX;
+        cur_status = CONF_READ_WRONGSYNTAX;
+        return;
     } else if( re_res != 0 ) {
         MSG_ERROR( "Error while matching pattern" );
         exit( 1 );
     }
 
     MSG_DEBUG_( "1Wire sensor address added: %s", value );
-    strcpy( d_conf->temp, value );
 
-    return CONF_READ_OK;
+    conf->dev.w1bus[ dev_w1_no++ ] = w1_bus_add_device( value );
+
+    cur_status = CONF_READ_OK;
+    return;
 }
 
 static const char *SSIGMA_LIST[] = {
     "relay_pins", "temp1w", NULL
 };
 
-int (*SSIGMA_LIST_FUN[])( const char *, void * ) = {_parse_relay, _parse_temp};
+void (*SSIGMA_LIST_FUN[])( const char * ) = {_parse_relay, _parse_temp};
 
 
-static int cur_status = CONF_READ_READY;
-static int logic_rule_no = 0;
+static void _parse_logic_limit( const char *value, LogicRangeType lr_type ) {
 
-static int _parse_logic_limit( const char *value, float *numb1, float *numb2 ) {
-
+    float numb1, numb2;
     regex_t re;
     regmatch_t re_mat[CONFIG_MAX_PARAM_CNT], *m_idx = NULL;
     int mi_start, mi_end, mi_dot_idx;
     int re_res;
 
     if( cur_status != CONF_READ_READY ) {
-        return CONF_READ_WRONGSTRUCTURE;
+        cur_status = CONF_READ_WRONGSTRUCTURE;
+        return;
     }
 
     re_res = regcomp(&re, "^([+-]?[0-9]{1,3})([\\.,][0-9]{1,4})?[[:space:]]*([+-]?[0-9]{1,3})([\\.,][0-9]{1,4})?$", REG_EXTENDED);
@@ -207,10 +223,12 @@ static int _parse_logic_limit( const char *value, float *numb1, float *numb2 ) {
 
     if( re_res == REG_NOMATCH ) {
         MSG_WARN( "Invalid '*_limit_temp' format, expected: numb1 numb2" );
-        return CONF_READ_WRONGSYNTAX;
+        cur_status = CONF_READ_WRONGSYNTAX;
+        return;
     } else if( re_res != 0 ) {
         MSG_ERROR( "Error while matching pattern" );
-        return CONF_READ_WRONGSYNTAX;
+        cur_status = CONF_READ_WRONGSYNTAX;
+        return;
     }
 
     // match (and validation) OK, safe to copy parameters
@@ -223,13 +241,14 @@ static int _parse_logic_limit( const char *value, float *numb1, float *numb2 ) {
     m_idx = &(re_mat[2]); // fractional part
     mi_dot_idx = m_idx->rm_so; // dot/comma here
     mi_end = m_idx->rm_eo;
+
     sprintf( numb_buf, "%.*s", (mi_end - mi_start), value + mi_start );
     if( numb_buf[mi_dot_idx - mi_start] == ',' ) {
         // change to dot for atof()
         numb_buf[mi_dot_idx - mi_start] = '.';
     }
 
-    *numb1 = atof( numb_buf );
+    numb1 = atof( numb_buf );
 
     m_idx = &(re_mat[3]); // Total part
     mi_start = m_idx->rm_so;
@@ -244,64 +263,54 @@ static int _parse_logic_limit( const char *value, float *numb1, float *numb2 ) {
         numb_buf[mi_dot_idx - mi_start] = '.';
     }
 
-    *numb2 = atof( numb_buf );
+    numb2 = atof( numb_buf );
 
-    return CONF_READ_EXPECT_NEXT;
+    // register
+    conf->logic[logic_rule_no] = logic_range_create( lr_type, numb1, numb2 );
+
+    cur_status = CONF_READ_EXPECT_NEXT;
+    return;
 }
 
 
-static int _parse_logic_up_limit( const char *value, void *conf ) {
+static void _parse_logic_up_limit( const char *value ) {
 
-    int ret;
-    struct config_logic* l_conf = (struct config_logic*) conf;
+    _parse_logic_limit( value, LOGIC_RANGE_UPPER_LIMIT );
 
-    if( (ret = _parse_logic_limit( value, &(l_conf->max), &(l_conf->min) )) != CONF_READ_EXPECT_NEXT ) {
-        return ret;
+    if( cur_status != CONF_READ_EXPECT_NEXT ) {
+        return;
     }
 
-    if( (l_conf->max - l_conf->min) < 0.1 ) {
-        MSG_WARN("Max. temp. should exceed Min.")
-    }
+    //MSG_DEBUG_( "Logic UPPER_LIMIT cond. found: %.2f, %.2f", l_conf->max, l_conf->min );
 
-    MSG_DEBUG_( "Logic UPPER_LIMIT cond. found: %.2f, %.2f", l_conf->max, l_conf->min );
-
-    l_conf->limit_type = UPPER_LIMIT;
-
-    return CONF_READ_EXPECT_NEXT;
+    return;
 }
 
-static int _parse_logic_low_limit( const char *value, void *conf ) {
+static void _parse_logic_low_limit( const char *value ) {
 
-    int ret;
-    struct config_logic* l_conf = (struct config_logic*) conf;
+    _parse_logic_limit( value, LOGIC_RANGE_LOW_LIMIT );
 
-
-    if( (ret = _parse_logic_limit( value, &(l_conf->min), &(l_conf->max) )) != CONF_READ_EXPECT_NEXT ) {
-        return ret;
+    if( cur_status != CONF_READ_EXPECT_NEXT ) {
+        return;
     }
 
-    if( (l_conf->max - l_conf->min) < 0.1 ) {
-        MSG_WARN("Max. temp. should exceed Min.")
-    }
+    //MSG_DEBUG_( "Logic LOW_LIMIT cond. found: %.2f, %.2f", l_conf->min, l_conf->max );
 
-    MSG_DEBUG_( "Logic LOW_LIMIT cond. found: %.2f, %.2f", l_conf->min, l_conf->max );
-
-    l_conf->limit_type = LOW_LIMIT;
-
-    return CONF_READ_EXPECT_NEXT;
+    return;
 }
 
-static int _parse_logic_action( const char *value, void *conf ) {
+static void _parse_logic_action( const char *value ) {
 
     regex_t re;
     regmatch_t re_mat[CONFIG_MAX_PARAM_CNT], *m_idx = NULL;
     int mi_start, mi_end;
     int re_res;
 
-    struct config_logic* l_conf = (struct config_logic*) conf;
+    //struct config_logic* l_conf = (struct config_logic*) conf;
 
     if( cur_status != CONF_READ_EXPECT_NEXT ) {
-        return CONF_READ_WRONGSTRUCTURE;
+        cur_status = CONF_READ_WRONGSTRUCTURE;
+        return;
     }
 
     re_res = regcomp(&re, "^relay[[:space:]]+ch([0-9]{1,2})[[:space:]]+open$", REG_EXTENDED);
@@ -315,10 +324,13 @@ static int _parse_logic_action( const char *value, void *conf ) {
 
     if( re_res == REG_NOMATCH ) {
         MSG_WARN( "Invalid 'action' format, expected: relay ch<no.> open" );
-        return CONF_READ_WRONGSYNTAX;
+        cur_status = CONF_READ_WRONGSYNTAX;
+        return;
     } else if( re_res != 0 ) {
         MSG_ERROR( "Error while matching pattern" );
-        return CONF_READ_WRONGSYNTAX;
+        cur_status = CONF_READ_WRONGSYNTAX;
+        // exit
+        return;
     }
 
     // match (and validation) OK, safe to copy parameters
@@ -330,9 +342,10 @@ static int _parse_logic_action( const char *value, void *conf ) {
     mi_end = m_idx->rm_eo;
     sprintf( numb_buf, "%.*s", (mi_end - mi_start), value + mi_start );
 
-    l_conf->relay_ch = atof( numb_buf );
+    //l_conf->relay_ch = atof( numb_buf );
 
-    return CONF_READ_OK;
+    cur_status = CONF_READ_OK;
+    return;
 }
 
 
@@ -340,7 +353,7 @@ static const char *SLOGIC_LIST[] = {
     "up_limit_temp", "low_limit_temp", "action_temp", NULL
 };
 
-int (*SLOGIC_LIST_FUN[])( const char *, void * ) = {_parse_logic_up_limit, _parse_logic_low_limit, _parse_logic_action};
+void (*SLOGIC_LIST_FUN[])( const char * ) = {_parse_logic_up_limit, _parse_logic_low_limit, _parse_logic_action};
 
 
 static int _load_settings( const char *name, const char *value, void *conf ) {
@@ -354,7 +367,7 @@ static int _load_settings( const char *name, const char *value, void *conf ) {
         return 1;
     }
 
-    cur_status = (SSIGMA_LIST_FUN[idx])(value, &(((Config *)conf)->dev));
+    (SSIGMA_LIST_FUN[idx])(value);
 
     if( CONF_READ_OK == cur_status ) {
         cur_status = CONF_READ_READY;
@@ -374,7 +387,7 @@ static int _load_logic( const char *name, const char *value, void *conf ) {
         return 1;
     }
 
-    cur_status = (SLOGIC_LIST_FUN[idx])(value, &(((Config *)conf)->logic[logic_rule_no]));
+    (SLOGIC_LIST_FUN[idx])(value);
 
     if( cur_status == CONF_READ_OK ) {
         ++logic_rule_no;
@@ -397,7 +410,6 @@ static int ini_parser_sigma_handler( void* user, const char* section, const char
     Config* conf = (Config*)user;
 
     short sect_idx;
-    int param_parse_res;
 
     MSG_DEBUG_( "INI file, parsing: %s: %s=%s", section, name, value );
 
@@ -407,17 +419,16 @@ static int ini_parser_sigma_handler( void* user, const char* section, const char
         return 1;
     }
 
-    param_parse_res = (SECT_LIST_FUN[sect_idx])( name, value, conf );
+    (SECT_LIST_FUN[sect_idx])( name, value, conf );
 
-    if( param_parse_res != CONF_READ_READY ) {
-        MSG_ERROR( "Errors while loading file" );
-    }
+    //if( param_parse_res != CONF_READ_READY ) {
+    //    MSG_ERROR( "Errors while loading file" );
+    //}
 
     return 1;
 }
 
 Config *read_conf( const char *conf_file ) {
-    Config *conf;
 
     if( (conf = malloc( sizeof(Config) )) == NULL ) {
         MSG_ERROR_MALLOC();

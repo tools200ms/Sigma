@@ -124,7 +124,7 @@ if( msgIsSilentModeSet() == false ) fprintf( stdout, format "\n", msgs );
 	{ fprintf( stderr, "ERROR: " msg "\n", args ); }
 
 #define MSG_ERROR_MALLOC() \
-	{ fprintf( stderr, "ERROR: malloc() has failedat %s:%d\n", __FILE__, __LINE__ ); exit(43); }
+	{ 	fprintf( stderr, "ERROR: malloc() has failed %s:%d\n", __FILE__, __LINE__ ); }
 
 #define MSG_ERROR_AND_EXIT( msg ) \
 	{ fprintf( stderr, "ERROR: %s\n", msg ); exit(1); }

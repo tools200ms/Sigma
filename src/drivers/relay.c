@@ -25,23 +25,23 @@ static void _mark_channel_status_open( unsigned long long *status, const int ch_
 static void _mark_channel_status_closed( unsigned long long *status, const int ch_no );
 
 
-RelayDev *relay1ch_init( int ch_pin ) {
-	return relay_init( DEV_RELAY_MODE_NORMALLY_OPEN, RELAY_ONE_CHANEL, ch_pin );
+RelayDev *relay1ch_create( int ch_pin ) {
+	return relay_create( DEV_RELAY_MODE_NORMALLY_OPEN, RELAY_ONE_CHANEL, ch_pin );
 }
 
-RelayDev *relay2ch_init( int ch1_pin, int ch2_pin ) {
-	return relay_init( DEV_RELAY_MODE_NORMALLY_OPEN, RELAY_TWO_CHANEL, ch1_pin, ch2_pin );
+RelayDev *relay2ch_create( int ch1_pin, int ch2_pin ) {
+	return relay_create( DEV_RELAY_MODE_NORMALLY_OPEN, RELAY_TWO_CHANEL, ch1_pin, ch2_pin );
 }
 
-RelayDev *relay3ch_init( int ch1_pin, int ch2_pin, int ch3_pin ) {
-	return relay_init( DEV_RELAY_MODE_NORMALLY_OPEN, RELAY_THREE_CHANEL, ch1_pin, ch2_pin, ch3_pin );
+RelayDev *relay3ch_create( int ch1_pin, int ch2_pin, int ch3_pin ) {
+	return relay_create( DEV_RELAY_MODE_NORMALLY_OPEN, RELAY_THREE_CHANEL, ch1_pin, ch2_pin, ch3_pin );
 }
 
 RelayDev *relay4ch_init( int ch1_pin, int ch2_pin, int ch3_pin, int ch4_pin ) {
-	return relay_init( DEV_RELAY_MODE_NORMALLY_OPEN, RELAY_FOUR_CHANEL, ch1_pin, ch2_pin, ch3_pin, ch4_pin );
+	return relay_create( DEV_RELAY_MODE_NORMALLY_OPEN, RELAY_FOUR_CHANEL, ch1_pin, ch2_pin, ch3_pin, ch4_pin );
 }
 
-RelayDev *relayXch_init( const short mode, int chanel_cnt, int pins[] ) {
+RelayDev *relayXch_create( const short mode, int chanel_cnt, int pins[] ) {
 
 	RelayDev *relay_dev = NULL;
 
@@ -49,9 +49,9 @@ RelayDev *relayXch_init( const short mode, int chanel_cnt, int pins[] ) {
 		MSG_ERROR_( "Illegal chanel count provided: %d\n", chanel_cnt );
 		return NULL;
 	} else if( chanel_cnt < 0 ) {
-		for( int idx = 0; idx < DEV_RELAY_MAX_CHANEL_CNT; ) {
+		for( int idx = 0; idx < DEV_RELAY_MAX_CHANEL_CNT; ++idx ) {
 
-			if( pins[idx++] < 0 ) {
+			if( pins[idx] < 0 ) {
 				chanel_cnt = idx;
 				break;
 			}
@@ -65,25 +65,25 @@ RelayDev *relayXch_init( const short mode, int chanel_cnt, int pins[] ) {
 
 	switch( chanel_cnt ) {
 		case 1:
-			relay_dev = relay_init( mode, chanel_cnt, pins[0] );
-		;;
+			relay_dev = relay_create( mode, chanel_cnt, pins[0] );
+		break;
 
 		case 2:
-			relay_dev = relay_init( mode, chanel_cnt, pins[0], pins[1] );
-		;;
+			relay_dev = relay_create( mode, chanel_cnt, pins[0], pins[1] );
+		break;
 
 		case 3:
-			relay_dev = relay_init( mode, chanel_cnt, pins[0], pins[1], pins[2] );
-		;;
+			relay_dev = relay_create( mode, chanel_cnt, pins[0], pins[1], pins[2] );
+		break;
 
 		default:
-			MSG_ERROR("Function 'relayXch_init()' NOT FULLY IMPLEMENTED !!!");
+			MSG_ERROR("Function 'relayXch_create()' NOT FULLY IMPLEMENTED !!!");
 	}
 
 	return relay_dev;
 }
 
-RelayDev *relay_init( const short mode, const int chanel_cnt, ... ) {
+RelayDev *relay_create( const short mode, const int chanel_cnt, ... ) {
 	va_list pin_list;
 	RelayDev *relay_dev;
 	int *relay_chanel_pins;
@@ -98,8 +98,7 @@ RelayDev *relay_init( const short mode, const int chanel_cnt, ... ) {
 	if( (relay_dev = malloc(sizeof(RelayDev))) == NULL ||
 		(relay_dev->chanel_pins = relay_chanel_pins = malloc(chanel_cnt * sizeof(int))) == NULL ) {
 
-		MSG_ERROR( "malloc() has failed" );
-		return NULL;
+		MSG_ERROR_MALLOC();
 	}
 
 	if( (mode & (DEV_RELAY_MODE_NULL)) != (DEV_RELAY_MODE_NULL) ) {
@@ -135,20 +134,21 @@ RelayDev *relay_init( const short mode, const int chanel_cnt, ... ) {
 		pin = va_arg( pin_list, int );
 
 		// set GPIO PIN:
-		pinMode( pin, OUTPUT );
+		//pinMode( pin, OUTPUT );
+
 		relay_chanel_pins[idx] = pin;
 
-		MSGBEGIN_INFO_( "\tch. #%d at pin %d", ch, pin );
+		//MSGBEGIN_INFO_( "\tch. #%d at pin %d", ch, pin );
 
 		// read pin, if open (that indicates that program crashed
 		// or other unexpected thing happen) notify
-		if( digitalRead( pin ) != relay_dev->OPEN_FLAG ) {
-			MSGBEGIN_INFO( "\n" );
-		}
-		else {
-			MSGBEGIN_INFO( " - !pin already in HIGH state!\n" );
-			_mark_channel_status_open( &(relay_dev->status), ch );
-		}
+		//if( digitalRead( pin ) != relay_dev->OPEN_FLAG ) {
+		//	MSGBEGIN_INFO( "\n" );
+		//}
+		//else {
+		//	MSGBEGIN_INFO( " - !pin already in HIGH state!\n" );
+		//	_mark_channel_status_open( &(relay_dev->status), ch );
+		//}
 	}
 
 	/* clean memory used by variable arguments */
@@ -156,6 +156,33 @@ RelayDev *relay_init( const short mode, const int chanel_cnt, ... ) {
 
 	MSGEND_INFO( "Relay OK" );
 	return relay_dev;
+}
+
+int relay_init( RelayDev *r_dev ) {
+
+	int ch_cnt = r_dev->chanel_cnt;
+	int *ch_pins = r_dev->chanel_pins;
+
+	for( int idx = 0, ch = 1, pin; idx < ch_cnt; ++idx, ++ch ) {
+		pin = ch_pins[idx];
+
+		// set GPIO PIN:
+		pinMode( pin, OUTPUT );
+
+		MSGBEGIN_INFO_( "\tch. #%d at pin %d", ch, pin );
+
+		// read pin, if open (that indicates that program crashed
+		// or other unexpected thing happen) notify
+		if( digitalRead( pin ) != r_dev->OPEN_FLAG ) {
+			MSGBEGIN_INFO( "\n" );
+		}
+		else {
+			MSGBEGIN_INFO( " - !pin already in HIGH state!\n" );
+			_mark_channel_status_open( &(r_dev->status), ch );
+		}
+	}
+
+	return 0;
 }
 
 void relay_test( RelayDev *r_dev ) {
@@ -208,7 +235,6 @@ short relay_status( const RelayDev *r_dev, const int ch_no ) {
 // End of Relay status updates/reads
 
 void relay_opencontact( RelayDev *r_dev, const int ch_no ) {
-	//unsigned long long status_mask;
 
 	if( ch_no < 1 || ch_no > r_dev->chanel_cnt ) {
 		printf("Invalid chanel for relay");
