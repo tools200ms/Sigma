@@ -59,7 +59,7 @@ sudo systemctl start sigma
 # check: 
 service sigma status
 ```
-# OpenRC
+### OpenRC
 For OpenRC distros: 
 ```bash
 # install service
