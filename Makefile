@@ -20,8 +20,12 @@ compile:
 	$(MAKE) -C ${SRC_DIR}
 	@echo "----- Done. --------------------------------"
 
-install: clean compile
+install:
 	@echo "----- Installing ---------------------------"
+
+	@if [ ! -x "${BUILD_DIR}/${EXEC_NAME}" ]; then \
+  	echo "    Please do: 'make compile' before 'make install' !"; exit 1;\
+  	fi
 
 	sudo cp "${BUILD_DIR}/${EXEC_NAME}" "${PREFIX}"
 	@echo "----- Done. --------------------------------"

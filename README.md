@@ -39,6 +39,40 @@ At this point only temperature sensors has been implemented and tested. Thus the
    * One or multiple chanel relay such as [WaveShare RPi Relay Board](https://www.waveshare.com/wiki/RPi_Relay_Board)
 
 
+## Software Setup
+Get, compile code and install: 
+```bash
+
+sudo git clone https://github.com/tools200ms/Sigma.git /usr/src/Sigma
+sudo make compile install clean -C /usr/src/Sigma
+```
+### SystemD
+If it's systemd distributions do the following:
+
+```bash
+# install service
+sudo cp /usr/src/Sigma/dist/sigma.service /etc/systemd/system/
+sudo systemctl daemon-reload
+sudo systemctl enable sigma
+sudo systemctl start sigma
+
+# check: 
+service sigma status
+```
+# OpenRC
+For OpenRC distros: 
+```bash
+# install service
+sudo cp usr/src/Sigma/dist/sigma-openrc.sh /etc/init.d/sigma
+sudo chmod +x /etc/init.d/sigma
+
+sudo rc-update add sigma default
+sudo rc-service sigma start
+
+# check: 
+service sigma status
+```
+
 ## Software dependencies
 
 Sigma uses [WiringPI](https://github.com/WiringPi/WiringPi) library for hardware calls.

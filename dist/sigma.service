@@ -1,9 +1,12 @@
 [Unit]
 Description=Sigma Service
+After=basic.target
 
 [Service]
 Type=simple
 ExecStart=/usr/local/bin/sigma --silent
+TimeoutStartSec=5
+
 Restart=on-failure
 User=root
 Group=root
