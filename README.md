@@ -2,7 +2,7 @@
 
 Sigma is a control and monitoring program designed to run on Raspberry PI boards. The aims of Σ are: 
 - Provide small 'control' display capability to present summary and key information, e.g.: temperature, ip address, network load, device status (network status, potential errors/warnings).
-- Provide small 'keyboard' to allow basic operations (two-button keyboard under development), e.g.: new network device 'key-press' authorisation, device soft 'shutdown'.
+- Provide small 'keypad' to allow basic operations (two-button keypad under development), e.g.: new network device 'key-press' authorisation, device soft 'shutdown'.
 
 Program is developed with an 'abstraction' in mind to make it suitable for the following applications:
 - Node for IoT (Internet of Thinks) systems.
