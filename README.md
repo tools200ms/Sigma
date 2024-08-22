@@ -1,7 +1,14 @@
 # Sigma Σ
 
-Sigma is a control and monitoring program from IoT realm designed for running on Raspberry PI boards. Program reads-out paramters such as temperature, basing on this does apply a certain actions e.g. cooling fan switch on/off.
-It supports LCD diplay, thus user has an easy insight into actual state.
+Sigma is a control and monitoring program designed to run on Raspberry PI boards. The aims of Σ are: 
+- Provide small 'control' display capability to present summary and key information, e.g.: temperature, ip address, network load, device status (network status, potential errors/warnings).
+- Provide small 'keypad' to allow basic operations (two-button keypad under development), e.g.: new network device 'key-press' authorisation, device soft 'shutdown'.
+
+Program is developed with an 'abstraction' in mind to make it suitable for the following applications:
+- Node for IoT (Internet of Thinks) systems.
+- Basic controls for 'headless' Raspberry Pi microcomputers.
+
+Below is a picture of a prototype of the Raspberry Pi based device that controls two cooling fans via electrical relay (switch). Depending on temperature `Sigma` gives 'fan' on/off signals. For user's convenience device provides a small LCD display that allows on status check (no need for logging-in to app).
 
 ![Setup](./doc/PiAndSigma-255x255.jpeg "Setup: PI with display, temp. sensor and relay")
 
@@ -26,7 +33,7 @@ The conditions are defined as:
 - **if** value drops below `min` **then:** send signal `on`
 - **if** value exceeds `max` **then:** send signal `off`
 
-At this point only temperature sensors has been implemented and tested. Thus the value can only be temperature. 'Logic' `Upper limit` is used to drive cooling (by swithing on fan), while logic `Low limit` is for heating applications.
+At this point only temperature sensors has been implemented and tested. Thus, the value can only be temperature. 'Logic' `Upper limit` is used to drive cooling (by swithing on fan), while logic `Low limit` is for heating applications.
 
 
 ## Requirements
