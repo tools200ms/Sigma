@@ -73,6 +73,20 @@ sudo rc-service sigma start
 service sigma status
 ```
 
+### Supported Hardware
+
+#### Displays
+
+| Manufacture: | Models:                               |
+|--------------|---------------------------------------|
+| Waveshare    | [1.54" LCD](https://www.waveshare.com/wiki/1.54inch_LCD_Module) | |
+
+
+### List of Hardware plenned to support: 
+
+* [Adafruit PiOLED display - 128x32 Monochrome OLED](https://www.adafruit.com/product/3527)
+
+
 ## Software dependencies
 
 Sigma uses [WiringPI](https://github.com/WiringPi/WiringPi) library for hardware calls.
