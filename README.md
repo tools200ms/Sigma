@@ -49,7 +49,6 @@ At this point only temperature sensors has been implemented and tested. Thus, th
 ## Software Setup
 Get, compile code and install: 
 ```bash
-
 sudo git clone https://github.com/tools200ms/Sigma.git /usr/src/Sigma
 sudo make compile install clean -C /usr/src/Sigma
 ```
@@ -79,6 +78,20 @@ sudo rc-service sigma start
 # check: 
 service sigma status
 ```
+
+## Futher features
+
+### Physical contact access authentication
+As sigma controls hardware elements such as key-pads and displays it can be used 
+for access authentication. 
+Like [Wi-Fi Protected Setup (WPS)](https://en.wikipedia.org/wiki/Wi-Fi_Protected_Setup) 
+where Wi-fi access is granted by pressing a physical button instead of providing a 'classic' password. 
+Sigma software can be used but to grand e.g. ssh access. 
+Upon SSH login attempt to device, its screen can be used to display information about attempt, while keypad can be used to 
+confirm or deny access.
+
+Also, screen can be used to display pin to be used as a 
+temporary password to make the security at tip-top.
 
 ## Software dependencies
 
