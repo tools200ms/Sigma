@@ -49,7 +49,6 @@ At this point only temperature sensors has been implemented and tested. Thus, th
 ## Software Setup
 Get, compile code and install: 
 ```bash
-
 sudo git clone https://github.com/tools200ms/Sigma.git /usr/src/Sigma
 sudo make compile install clean -C /usr/src/Sigma
 ```
@@ -91,8 +90,22 @@ service sigma status
 
 ### List of Hardware plenned to support: 
 
+* [HD44780 LCD Display](https://glennklockwood.com/electronics/hd44780-lcd-display.html)
 * [Adafruit PiOLED display - 128x32 Monochrome OLED](https://www.adafruit.com/product/3527)
 
+## Futher features
+
+### Physical contact access authentication
+As sigma controls hardware elements such as key-pads and displays it can be used 
+for access authentication. 
+Like [Wi-Fi Protected Setup (WPS)](https://en.wikipedia.org/wiki/Wi-Fi_Protected_Setup) 
+where Wi-fi access is granted by pressing a physical button instead of providing a 'classic' password. 
+Sigma software can be used but to grand e.g. ssh access. 
+Upon SSH login attempt to device, its screen can be used to display information about attempt, while keypad can be used to 
+confirm or deny access.
+
+Also, screen can be used to display pin to be used as a 
+temporary password to make the security at tip-top.
 
 ## Software dependencies
 
@@ -101,3 +114,4 @@ Sigma uses [WiringPI](https://github.com/WiringPi/WiringPi) library for hardware
 
 
 
+f
