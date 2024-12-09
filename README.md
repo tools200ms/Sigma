@@ -88,7 +88,7 @@ service sigma status
 | Waveshare    | [1.54" LCD](https://www.waveshare.com/wiki/1.54inch_LCD_Module) | |
 
 
-### List of Hardware plenned to support: 
+### List of Hardware planned to support: 
 
 * [HD44780 LCD Display](https://glennklockwood.com/electronics/hd44780-lcd-display.html)
 * [Adafruit PiOLED display - 128x32 Monochrome OLED](https://www.adafruit.com/product/3527)
