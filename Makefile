@@ -1,8 +1,11 @@
 SRC_DIR := ./src
 BUILD_DIR = ./build
 
-PROJ_NAME := Sigma
+LOCALES_DIR = locales
+PO_FILES = $(shell find $(LOCALES_DIR) -name "*.po")
+MO_FILES = $(PO_FILES:.po=.mo)
 
+PROJ_NAME := Sigma
 EXEC_NAME := sigma
 
 PREFIX := /usr/local/bin
@@ -13,8 +16,16 @@ RELEASE_NAME := ${EXEC_NAME}-${shell grep "#define[[:space:]]{1,31}[A-Z0-9]{3,63
 .PHONY: compile install clean clean_current_dir release
 
 #
+compile_locales:
+	@for po in $(PO_FILES); do \
+    	mo=$${po%.po}.mo; \
+    	if [ ! -f $$mo ]; then \
+    	  echo "Compiling locales: $$po -> $$mo"; \
+    	  msgfmt -o $$mo $$po || exit 1; \
+    	fi; \
+    done
 
-compile:
+compile: compile_locales
 	@echo "----- Compailing ---------------------------"
 
 	$(MAKE) -C ${SRC_DIR}
@@ -30,13 +41,18 @@ install:
 	sudo cp "${BUILD_DIR}/${EXEC_NAME}" "${PREFIX}"
 	@echo "----- Done. --------------------------------"
 
+
+clean_locales:
+	@find $(LOCALES_DIR) -type f -name "*.mo" -exec echo "Removing: " {} \; -exec rm {} \;
+	@echo "All .mo (locales) files cleaned."
+
 clean_current_dir:
 	@echo "----- Cleaning current directory -----------"
 
 	rm -f *~
 	@echo "----- Done. --------------------------------"
 
-clean: clean_current_dir
+clean: clean_locales clean_current_dir
 	@echo "----- Cleaning -----------------------------"
 
 	$(MAKE) -C ${SRC_DIR} clean

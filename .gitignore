@@ -2,9 +2,9 @@
 *~
 *.o
 *.so
+*.mo
 build/*
 release/*
-
 
 # JetBrains IDE
 .idea/
