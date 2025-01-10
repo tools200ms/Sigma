@@ -16,16 +16,14 @@ RELEASE_NAME := ${EXEC_NAME}-${shell grep "#define[[:space:]]{1,31}[A-Z0-9]{3,63
 .PHONY: compile install clean clean_current_dir release
 
 #
-compile_locales:
-	@for po in $(PO_FILES); do \
-    	mo=$${po%.po}.mo; \
-    	if [ ! -f $$mo ]; then \
-    	  echo "Compiling locales: $$po -> $$mo"; \
-    	  msgfmt -o $$mo $$po || exit 1; \
-    	fi; \
-    done
+%.mo: %.po
+	@echo "Compiling $< -> $@"
+	msgfmt -o $@ $<
 
-compile: compile_locales
+compile_locales: $(MO_FILES)
+
+
+compile: $(MO_FILES)
 	@echo "----- Compailing ---------------------------"
 
 	$(MAKE) -C ${SRC_DIR}
