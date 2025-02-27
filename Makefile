@@ -10,7 +10,7 @@ EXEC_NAME := sigma
 
 PREFIX := /usr/local/bin
 
-RELEASE_NAME := ${EXEC_NAME}-${shell grep "#define[[:space:]]{1,31}[A-Z0-9]{3,63}PROGRAM_VERSION" src/about.h | sed -re 's/(.+)\"(.+)\"/\2/' | tr ' ' '_'}
+RELEASE_NAME := ${EXEC_NAME}-${shell grep "\#define[[:space:]]{1,31}[A-Z0-9]{3,63}PROGRAM_VERSION" src/about.h | sed -re 's/(.+)\"(.+)\"/\2/' | tr ' ' '_'}
 
 
 .PHONY: compile install clean clean_current_dir release
