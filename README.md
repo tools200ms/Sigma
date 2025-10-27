@@ -83,15 +83,17 @@ service sigma status
 
 #### Displays
 
-| Manufacture: | Models:                               |
-|--------------|---------------------------------------|
-| Waveshare    | [1.54" LCD](https://www.waveshare.com/wiki/1.54inch_LCD_Module) | |
+| Manufacture: | Model: | Specification        |
+|--------------|--------|----------------------|
+| Waveshare    | [1.54" LCD](https://www.waveshare.com/wiki/1.54inch_LCD_Module) | 240x240 px - 65K RGB |
 
 
 ### List of Hardware planned to support: 
 
-* [HD44780 LCD Display](https://glennklockwood.com/electronics/hd44780-lcd-display.html)
-* [Adafruit PiOLED display - 128x32 Monochrome OLED](https://www.adafruit.com/product/3527)
+Displays: 
+* [HD44780 LCD Display - 16x2 character](https://glennklockwood.com/electronics/hd44780-lcd-display.html)
+* [Adafruit PiOLED - 128x32 px, Monochrome OLED](https://www.adafruit.com/product/3527)
+* [Waveshare - 1.32inch - 128×96 px, 16 Gray Scale OLED, SPI / I2C](https://www.waveshare.com/1.32inch-oled-module.htm)
 
 ## Futher features
 
